@@ -4,6 +4,7 @@ import com.codecool.shop.dto.product.NewProductDto;
 import com.codecool.shop.dto.product.ProductDto;
 import com.codecool.shop.repository.ProductRepository;
 import com.codecool.shop.repository.entity.Product;
+import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.ProductMapper;
 import com.codecool.shop.service.validator.ProductValidator;
 import lombok.AllArgsConstructor;
@@ -27,7 +28,8 @@ public class ProductService {
     }
 
     public ProductDto getProductById(UUID id) {
-        return productMapper.toDto(productValidator.validateByEntityId(id));
+        return productMapper.toDto(productRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Product.class)));
     }
 
     public void saveNewProduct(NewProductDto newProductDto) {
@@ -35,13 +37,15 @@ public class ProductService {
     }
 
     public void updateProduct(UUID id, NewProductDto newProductDto) {
-        Product updatedProduct = productValidator.validateByEntityId(id);
+        Product updatedProduct = productRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Product.class));
         productMapper.updateProductFromDto(newProductDto, updatedProduct);
         productRepository.save(updatedProduct);
     }
 
     public void deleteProduct(UUID id) {
-        productRepository.delete(productValidator.validateByEntityId(id));
+        productValidator.validateByEntityId(id);
+        productRepository.deleteById(id);
     }
 
     public List<ProductDto> getFilteredProducts(UUID supplierId, UUID productCategoryId) {

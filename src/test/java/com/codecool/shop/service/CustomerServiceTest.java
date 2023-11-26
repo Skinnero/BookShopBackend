@@ -9,7 +9,6 @@ import com.codecool.shop.repository.entity.Customer;
 import com.codecool.shop.service.exception.EmailNotFoundException;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.CustomerMapper;
-import com.codecool.shop.service.validator.CustomerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,6 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDate;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,18 +33,18 @@ public class CustomerServiceTest {
     @Mock
     CustomerMapper mapper;
     @Mock
-    CustomerValidator validator;
-    @Mock
     PasswordEncoder encoder;
 
     private UUID customerId;
     private CustomerDto customerDto;
     private NewCustomerDto newCustomerDto;
     private Customer customer;
+    private String email;
 
     @BeforeEach
     void setUp() {
         customerId = UUID.fromString("b2212e0f-8124-44ce-a8d6-31ac5cfb75cb");
+        email = "Email";
 
         customerDto = new CustomerDto(
                 customerId,
@@ -73,7 +73,7 @@ public class CustomerServiceTest {
     @Test
     void testGetCustomerById_ShouldReturnCustomerDto_WhenExist() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId)).thenReturn(customer);
+        Mockito.when(repository.findById(customerId)).thenReturn(Optional.of(customer));
         Mockito.when(mapper.toDto(customer)).thenReturn(customerDto);
         CustomerDto expectedCustomerDto = service.getCustomerById(customerId);
 
@@ -84,7 +84,7 @@ public class CustomerServiceTest {
     @Test
     void testGetCustomerById_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(customerId);
 
         // then
         assertThatThrownBy(() -> service.getCustomerById(customerId)).isInstanceOf(ObjectNotFoundException.class);
@@ -93,21 +93,22 @@ public class CustomerServiceTest {
     @Test
     void testGetCustomerByEmail_ShouldReturnCustomerDto_WhenExist() {
         // when
-        Mockito.when(validator.validateByEmail(anyString())).thenReturn(customer);
+        Mockito.when(repository.findByEmail(email)).thenReturn(Optional.of(customer));
         Mockito.when(mapper.toDto(customer)).thenReturn(customerDto);
-        CustomerDto expectedCustomerDto = service.getCustomerByEmail("Email");
+        CustomerDto expectedCustomerDto = service.getCustomerByEmail(email);
 
         // then
         assertThat(expectedCustomerDto).isEqualTo(customerDto);
     }
 
     @Test
-    void testGetCustomerByEmail_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
+    void testGetCustomerByEmail_ShouldThrowEmailNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(validator.validateByEmail(anyString())).thenThrow(EmailNotFoundException.class);
+        Mockito.doThrow(EmailNotFoundException.class).when(repository).findByEmail(anyString());
+
 
         // then
-        assertThatThrownBy(() -> service.getCustomerByEmail("Email")).isInstanceOf(EmailNotFoundException.class);
+        assertThatThrownBy(() -> service.getCustomerByEmail(email)).isInstanceOf(EmailNotFoundException.class);
     }
 
     @Captor
@@ -131,8 +132,8 @@ public class CustomerServiceTest {
     @Test
     void testUpdateCustomerName_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId))
-                .thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(customerId);
+
 
         // then
         assertThatThrownBy(() -> service.updateCustomerName(customerId, new EditCustomerNameDto("Kacper")))
@@ -142,7 +143,7 @@ public class CustomerServiceTest {
     @Test
     void testUpdateCustomerPassword_ShouldChangeNameAndSave_WhenCalled() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId)).thenReturn(customer);
+        Mockito.when(repository.findById(customerId)).thenReturn(Optional.of(customer));
         service.updateCustomerPassword(customerId, new EditCustomerPasswordDto("Kacper"));
 
         // then
@@ -153,7 +154,7 @@ public class CustomerServiceTest {
     @Test
     void testUpdateCustomerPassword_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(customerId);
 
         // then
         assertThatThrownBy(() -> service.updateCustomerPassword(customerId, new EditCustomerPasswordDto("Kacper")))
@@ -163,7 +164,7 @@ public class CustomerServiceTest {
     @Test
     void testSoftDeletedCustomer_ShouldObfuscateCustomer_WhenExist() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId)).thenReturn(customer);
+        Mockito.when(repository.findById(customerId)).thenReturn(Optional.of(customer));
         service.softDeleteCustomer(customerId);
 
         // then
@@ -176,7 +177,7 @@ public class CustomerServiceTest {
     @Test
     void testSoftDeletedCustomer_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(validator.validateByEntityId(customerId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(customerId);
 
         // then
         assertThatThrownBy(() -> service.softDeleteCustomer(customerId)).isInstanceOf(ObjectNotFoundException.class);

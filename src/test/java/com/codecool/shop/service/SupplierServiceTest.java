@@ -3,12 +3,12 @@ package com.codecool.shop.service;
 import com.codecool.shop.dto.product.ProductIdDto;
 import com.codecool.shop.dto.supplier.NewSupplierDto;
 import com.codecool.shop.dto.supplier.SupplierDto;
+import com.codecool.shop.repository.ProductRepository;
 import com.codecool.shop.repository.SupplierRepository;
 import com.codecool.shop.repository.entity.Product;
 import com.codecool.shop.repository.entity.Supplier;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.SupplierMapper;
-import com.codecool.shop.service.validator.ProductValidator;
 import com.codecool.shop.service.validator.SupplierValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,10 +17,12 @@ import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.ArgumentMatchers.any;
 
 @ExtendWith(MockitoExtension.class)
 public class SupplierServiceTest {
@@ -33,7 +35,7 @@ public class SupplierServiceTest {
     @Mock
     SupplierValidator validator;
     @Mock
-    ProductValidator productValidator;
+    ProductRepository productRepository;
 
     private UUID supplierId;
     private Supplier supplier;
@@ -71,7 +73,7 @@ public class SupplierServiceTest {
     @Test
     void testGetSupplierById_ShouldReturnSupplierDto_WhenExist() {
         // when
-        Mockito.when(validator.validateByEntityId(supplierId)).thenReturn(supplier);
+        Mockito.when(repository.findById(supplierId)).thenReturn(Optional.of(supplier));
         Mockito.when(mapper.toDto(supplier)).thenReturn(supplierDto);
         SupplierDto expectedSupplierDto = service.getSupplierById(supplierId);
 
@@ -82,7 +84,7 @@ public class SupplierServiceTest {
     @Test
     void testGetSupplierById_ShouldThrowObjectNotFoundException_WhenNoProductCategory() {
         // when
-        Mockito.when(validator.validateByEntityId(supplierId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(supplierId);
 
         // then
         assertThatThrownBy(() -> service.getSupplierById(supplierId))
@@ -106,7 +108,7 @@ public class SupplierServiceTest {
     @Test
     void testUpdateSupplier_ShouldReturnSupplierDto_WhenCalled() {
         // when
-        Mockito.when(validator.validateByEntityId(supplierId)).thenReturn(supplier);
+        Mockito.when(repository.findById(supplierId)).thenReturn(Optional.of(supplier));
         service.updateSupplier(supplierId, newSupplierDto);
 
         // then
@@ -138,9 +140,9 @@ public class SupplierServiceTest {
         productTwo.setId(productIdDtoTwo.id());
 
         // when
-        Mockito.when(validator.validateByEntityId(supplierId)).thenReturn(supplier);
-        Mockito.when(productValidator.validateByEntityId(productIdDtoOne.id())).thenReturn(productOne);
-        Mockito.when(productValidator.validateByEntityId(productIdDtoTwo.id())).thenReturn(productTwo);
+        Mockito.when(repository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        Mockito.when(productRepository.findById(productIdDtoOne.id())).thenReturn(Optional.of(productOne));
+        Mockito.when(productRepository.findById(productIdDtoTwo.id())).thenReturn(Optional.of(productTwo));
         service.assignProductsToSupplier(supplierId, List.of(productIdDtoOne, productIdDtoTwo));
 
         // then
@@ -151,8 +153,7 @@ public class SupplierServiceTest {
     @Test
     void testAssignProductsToSupplier_ShouldThrowObjectNotFoundException_WhenNoSupplier() {
         // when
-        Mockito.when(validator.validateByEntityId(supplierId)).thenThrow(ObjectNotFoundException.class);
-
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(supplierId);
 
         // then
         assertThatThrownBy(() -> service.assignProductsToSupplier(supplierId, List.of()))
@@ -165,8 +166,8 @@ public class SupplierServiceTest {
         ProductIdDto productIdDto = new ProductIdDto(UUID.randomUUID());
 
         // when
-        Mockito.when(productValidator.validateByEntityId(productIdDto.id()))
-                .thenThrow(ObjectNotFoundException.class);
+        Mockito.when(repository.findById(supplierId)).thenReturn(Optional.of(supplier));
+        Mockito.doThrow(ObjectNotFoundException.class).when(productRepository).findById(any());
 
         // then
         assertThatThrownBy(() -> service.assignProductsToSupplier(supplierId, List.of(productIdDto)))

@@ -6,9 +6,9 @@ import com.codecool.shop.config.jwt.dto.RefreshTokenResponse;
 import com.codecool.shop.config.jwt.repository.RefreshTokenRepository;
 import com.codecool.shop.config.jwt.repository.entity.RefreshToken;
 import com.codecool.shop.config.jwt.service.exception.RefreshTokenExpiredException;
+import com.codecool.shop.repository.CustomerRepository;
 import com.codecool.shop.repository.entity.Customer;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
-import com.codecool.shop.service.validator.CustomerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -34,7 +34,7 @@ public class RefreshTokenServiceTest {
     @Mock
     RefreshTokenRepository repository;
     @Mock
-    CustomerValidator customerValidator;
+    CustomerRepository customerRepository;
     @Mock
     JwtUtils jwtUtils;
 
@@ -63,8 +63,8 @@ public class RefreshTokenServiceTest {
     @Test
     void testCreateRefreshToken_ShouldReturnRefreshToken_WhenCustomerExist() {
         // when
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
         Mockito.when(repository.findByCustomerId(customerId)).thenReturn(Optional.empty());
-        Mockito.when(customerValidator.validateByEntityId(customerId)).thenReturn(customer);
         RefreshToken expectedRefreshToken = service.createRefreshToken(customerId);
 
         // then
@@ -74,9 +74,7 @@ public class RefreshTokenServiceTest {
     @Test
     void testCreateRefreshToken_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(repository.findByCustomerId(customerId)).thenReturn(Optional.empty());
-        Mockito.when(customerValidator.validateByEntityId(customerId))
-                .thenThrow(ObjectNotFoundException.class);
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.empty());
 
         // then
         assertThatThrownBy(() -> service.createRefreshToken(customerId))
@@ -111,6 +109,7 @@ public class RefreshTokenServiceTest {
         // when
         Mockito.when(repository.findById(refreshTokenId)).thenReturn(Optional.of(refreshToken));
         Mockito.when(repository.save(any(RefreshToken.class))).thenReturn(refreshToken);
+        Mockito.when(customerRepository.findById(customerId)).thenReturn(Optional.of(customer));
         Mockito.when(jwtUtils.generateTokenFromEmail(anyString())).thenReturn(accessToken);
         RefreshTokenResponse expectedRefreshTokenResponse = service.handleRefreshTokenRequest(
                 new RefreshTokenRequest(refreshTokenId));

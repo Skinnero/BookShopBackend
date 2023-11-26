@@ -31,4 +31,6 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
                         """)
     List<Product> findAllBySupplierIdAndProductCategoryId(@Param("supplierId") UUID supplierId,
                                                           @Param("productCategoryId") UUID productCategoryId);
+
+    void deleteById(UUID id);
 }

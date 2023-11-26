@@ -6,9 +6,9 @@ import com.codecool.shop.config.jwt.dto.RefreshTokenResponse;
 import com.codecool.shop.config.jwt.repository.RefreshTokenRepository;
 import com.codecool.shop.config.jwt.repository.entity.RefreshToken;
 import com.codecool.shop.config.jwt.service.exception.RefreshTokenExpiredException;
+import com.codecool.shop.repository.CustomerRepository;
 import com.codecool.shop.repository.entity.Customer;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
-import com.codecool.shop.service.validator.CustomerValidator;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,18 +22,21 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
-    private final CustomerValidator customerValidator;
+    private final CustomerRepository customerRepository;
     private final JwtUtils jwtUtils;
     @Value("${shop.app.jwtRefreshTokenExpirationMs}")
     private Long refreshTokenDurationMs;
     private static final Logger logger = LoggerFactory.getLogger(RefreshTokenService.class);
 
     public RefreshToken createRefreshToken(UUID customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ObjectNotFoundException(customerId, Customer.class));
+
         deleteRefreshTokenByCustomerId(customerId);
 
         logger.info("Creating new refresh token");
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setCustomer(customerValidator.validateByEntityId(customerId));
+        refreshToken.setCustomer(customer);
         refreshToken.setExpiryDate(Instant.now().plusMillis(refreshTokenDurationMs));
 
         return refreshTokenRepository.save(refreshToken);

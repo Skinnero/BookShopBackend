@@ -8,7 +8,6 @@ import com.codecool.shop.repository.entity.Address;
 import com.codecool.shop.repository.entity.Customer;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.AddressMapper;
-import com.codecool.shop.service.validator.AddressValidator;
 import com.codecool.shop.service.validator.CustomerValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,7 +19,6 @@ import java.util.UUID;
 public class AddressService {
     private final AddressRepository addressRepository;
     private final AddressMapper addressMapper;
-    private final AddressValidator addressValidator;
     private final CustomerValidator customerValidator;
 
     public AddressDto getAddressByCustomerId(UUID customerId) {
@@ -35,7 +33,8 @@ public class AddressService {
     }
 
     public void updateAddress(UUID id, EditAddressDto editAddressDto) {
-        Address updatedAddress = addressValidator.validateByEntityId(id);
+        Address updatedAddress = addressRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Address.class));
         addressMapper.updateAddressFromDto(editAddressDto, updatedAddress);
         addressRepository.save(updatedAddress);
     }

@@ -7,7 +7,6 @@ import com.codecool.shop.repository.AddressRepository;
 import com.codecool.shop.repository.entity.Address;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.AddressMapper;
-import com.codecool.shop.service.validator.AddressValidator;
 import com.codecool.shop.service.validator.CustomerValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,8 +28,6 @@ public class AddressServiceTest {
     AddressRepository repository;
     @Mock
     AddressMapper mapper;
-    @Mock
-    AddressValidator validator;
     @Mock
     CustomerValidator customerValidator;
 
@@ -112,19 +109,20 @@ public class AddressServiceTest {
         Mockito.verify(repository, Mockito.times(1)).save(captor.capture());
         assertThat(captor.getValue()).isEqualTo(address);
     }
+
     @Test
     void testSaveNewAddress_ShouldThrowObjectNotFoundException_WhenNoCustomer() {
         // when
-        Mockito.when(customerValidator.validateByEntityId(customerId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(customerValidator).validateByEntityId(customerId);
 
         // then
-        assertThatThrownBy(() ->service.saveNewAddress(newAddressDto)).isInstanceOf(ObjectNotFoundException.class);
+        assertThatThrownBy(() -> service.saveNewAddress(newAddressDto)).isInstanceOf(ObjectNotFoundException.class);
     }
 
     @Test
     void testUpdateAddress_ShouldReturnAddressDto_WhenAddressExist() {
         // when
-        Mockito.when(validator.validateByEntityId(addressId)).thenReturn(address);
+        Mockito.when(repository.findById(addressId)).thenReturn(Optional.of(address));
         Mockito.when(repository.save(address)).thenReturn(address);
         service.updateAddress(addressId, editAddressDto);
 
@@ -136,7 +134,7 @@ public class AddressServiceTest {
     @Test
     void testUpdateAddress_ShouldThrowObjectNotFoundException_WhenNoAddress() {
         // when
-        Mockito.when(validator.validateByEntityId(addressId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(addressId);
 
         // then
         assertThatThrownBy(() -> service.updateAddress(addressId, editAddressDto))

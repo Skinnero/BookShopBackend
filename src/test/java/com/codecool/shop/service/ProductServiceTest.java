@@ -15,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -72,7 +73,7 @@ public class ProductServiceTest {
     @Test
     void testGetProductById_ShouldReturnProductDto_WhenExist() {
         // when
-        Mockito.when(validator.validateByEntityId(productId)).thenReturn(product);
+        Mockito.when(repository.findById(productId)).thenReturn(Optional.of(product));
         Mockito.when(mapper.toDto(product)).thenReturn(productDto);
         ProductDto expectedProductDto = service.getProductById(productId);
 
@@ -83,7 +84,7 @@ public class ProductServiceTest {
     @Test
     void testGetProductById_ShouldThrowObjectNotFoundException_WhenNoProduct() {
         // when
-        Mockito.when(validator.validateByEntityId(productId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(productId);
 
         // then
         assertThatThrownBy(() -> service.getProductById(productId)).isInstanceOf(ObjectNotFoundException.class);
@@ -106,7 +107,7 @@ public class ProductServiceTest {
     @Test
     void testUpdateProduct_ShouldReturnProductDto_WhenProductExist() {
         // when
-        Mockito.when(validator.validateByEntityId(productId)).thenReturn(product);
+        Mockito.when(repository.findById(productId)).thenReturn(Optional.of(product));
         service.updateProduct(productId, newProductDto);
 
         // then
@@ -117,7 +118,7 @@ public class ProductServiceTest {
     @Test
     void testUpdateProduct_ShouldThrowObjectNotFoundException_WhenNoProduct() {
         // when
-        Mockito.when(validator.validateByEntityId(productId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(productId);
 
         // then
         assertThatThrownBy(() -> service.updateProduct(productId, newProductDto))
@@ -127,7 +128,8 @@ public class ProductServiceTest {
     @Test
     void testDeleteProduct_ShouldThrowObjectNotFoundException_WhenNoProduct() {
         // when
-        Mockito.when(validator.validateByEntityId(productId)).thenThrow(ObjectNotFoundException.class);
+        Mockito.doThrow(ObjectNotFoundException.class).when(validator).validateByEntityId(productId);
+
 
         // then
         assertThatThrownBy(() -> service.deleteProduct(productId))
