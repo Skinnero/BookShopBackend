@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:testdb
+    username: sa
+    password: password
+    driver-class-name: org.h2.Driver
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+  flyway:
+    locations: db/migration/
+
+shop:
+  app:
+    frontendURL: http://localhost:3000
+    jwtSecret: ==================CodeCoolShop==================
+    jwtTokenExpirationMs: 10000
+    jwtRefreshTokenExpirationMs: 2 629 800 000

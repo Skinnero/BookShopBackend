@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  app:
+    container_name: codecool_shop
+    build:
+      context: ./
+      dockerfile: dockercompose/Dockerfile
+    ports:
+      - "8080:8080"
+    networks: [codecool_shop-network]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  postgres:
+    container_name: postgres_codecool_shop
+    image: "postgres:15"
+    env_file:
+      - ./dockercompose/db.env
+    ports:
+      - "5432:5432"
+    networks: [codecool_shop-network]
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+networks:
+  codecool_shop-network:
+    driver: bridge

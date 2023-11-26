@@ -1,0 +1,24 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/codecool_shop
+    username: postgres
+    password: postgres
+  jpa:
+    database: postgresql
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    show-sql: true
+
+shop:
+  app:
+    frontendURL: http://localhost:3000
+    jwtSecret: ==================CodeCoolShop==================
+    jwtTokenExpirationMs: 10000
+    jwtRefreshTokenExpirationMs: 2 629 800 000
+
+#   2 629 800 000 - month
+#   604 800 017 - week
+#   864 000 00 - day
+#   360 000 0 - hour
+#   60000 - minute
