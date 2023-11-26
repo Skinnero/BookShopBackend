@@ -10,12 +10,12 @@ import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class BasketValidator implements Validator<Basket> {
+public class BasketValidator implements Validator {
     private final BasketRepository basketRepository;
 
     @Override
-    public Basket validateByEntityId(UUID id) {
-        return basketRepository.findById(id)
+    public void validateByEntityId(UUID id) {
+        basketRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id, Basket.class));
     }
 }

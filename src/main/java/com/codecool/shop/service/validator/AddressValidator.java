@@ -10,12 +10,12 @@ import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class AddressValidator implements Validator<Address> {
+public class AddressValidator implements Validator {
     private final AddressRepository addressRepository;
 
     @Override
-    public Address validateByEntityId(UUID id) {
-        return addressRepository.findById(id)
+    public void validateByEntityId(UUID id) {
+        addressRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id, Address.class));
     }
 }
