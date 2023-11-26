@@ -58,14 +58,14 @@ public class BasketService {
         List<UUID> productList = editBasketDto.products()
                 .stream()
                 .flatMap(product -> Collections.nCopies(product.quantity(), product.productId())
-                        .stream())
-                .toList();
+                        .stream()).toList();
 
         basketRepository.save(basketMapper.dtoToBasket(id, productList));
     }
 
     public void deleteBasket(UUID id) {
-        basketRepository.delete(basketValidator.validateByEntityId(id));
+        basketValidator.validateByEntityId(id);
+        basketRepository.deleteById(id);
     }
 
 }

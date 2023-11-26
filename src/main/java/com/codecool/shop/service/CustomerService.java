@@ -8,8 +8,9 @@ import com.codecool.shop.dto.customer.EditCustomerPasswordDto;
 import com.codecool.shop.dto.customer.NewCustomerDto;
 import com.codecool.shop.repository.CustomerRepository;
 import com.codecool.shop.repository.entity.Customer;
+import com.codecool.shop.service.exception.EmailNotFoundException;
+import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.CustomerMapper;
-import com.codecool.shop.service.validator.CustomerValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,15 +23,16 @@ import java.util.UUID;
 public class CustomerService {
     private final CustomerRepository customerRepository;
     private final CustomerMapper customerMapper;
-    private final CustomerValidator customerValidator;
     private final PasswordEncoder encoder;
 
     public CustomerDto getCustomerById(UUID id) {
-        return customerMapper.toDto(customerValidator.validateByEntityId(id));
+        return customerMapper.toDto(customerRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Customer.class)));
     }
 
     public CustomerDto getCustomerByEmail(String email) {
-        return customerMapper.toDto(customerValidator.validateByEmail(email));
+        return customerMapper.toDto(customerRepository.findByEmail(email)
+                .orElseThrow(() -> new EmailNotFoundException(email)));
     }
 
     public void saveCustomer(NewCustomerDto newCustomerDto) {
@@ -42,20 +44,23 @@ public class CustomerService {
     }
 
     public void updateCustomerName(UUID id, EditCustomerNameDto editCustomerNameDto) {
-        Customer updatedCustomer = customerValidator.validateByEntityId(id);
+        Customer updatedCustomer = customerRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Customer.class));
         customerMapper.updateCustomerNameFromDto(editCustomerNameDto, updatedCustomer);
         customerRepository.save(updatedCustomer);
     }
 
     public void updateCustomerPassword(UUID id, EditCustomerPasswordDto editCustomerPasswordDto) {
-        Customer updatedCustomer = customerValidator.validateByEntityId(id);
+        Customer updatedCustomer = customerRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Customer.class));
         customerMapper.updateCustomerPasswordFromDto(editCustomerPasswordDto, updatedCustomer);
         encodePassword(updatedCustomer);
         customerRepository.save(updatedCustomer);
     }
 
     public void softDeleteCustomer(UUID id) {
-        Customer customerToDelete = customerValidator.validateByEntityId(id);
+        Customer customerToDelete = customerRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Customer.class));
         obfuscateData(customerToDelete);
         customerRepository.save(customerToDelete);
     }

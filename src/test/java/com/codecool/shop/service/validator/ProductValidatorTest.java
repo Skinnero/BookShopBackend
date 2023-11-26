@@ -14,8 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductValidatorTest {
@@ -35,10 +34,10 @@ public class ProductValidatorTest {
     void testValidateEntityById_ShouldReturnObject_WhenExist() {
         // when
         Mockito.when(repository.findById(productId)).thenReturn(Optional.of(new Product()));
-        Product product = validator.validateByEntityId(productId);
 
         // then
-        assertThat(product).isNotNull();
+        assertThatCode(() -> validator.validateByEntityId(productId))
+                .doesNotThrowAnyException();
     }
 
     @Test

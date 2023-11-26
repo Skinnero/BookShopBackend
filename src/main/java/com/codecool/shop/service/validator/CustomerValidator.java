@@ -11,17 +11,17 @@ import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class CustomerValidator implements Validator<Customer> {
+public class CustomerValidator implements Validator {
     private final CustomerRepository customerRepository;
 
     @Override
-    public Customer validateByEntityId(UUID id) {
-        return customerRepository.findById(id)
+    public void validateByEntityId(UUID id) {
+        customerRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id, Customer.class));
     }
 
-    public Customer validateByEmail(String email) {
-        return customerRepository.findByEmail(email)
+    public void validateByEmail(String email) {
+        customerRepository.findByEmail(email)
                 .orElseThrow(() -> new EmailNotFoundException(email));
     }
 }

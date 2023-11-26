@@ -30,4 +30,6 @@ public interface BasketRepository extends JpaRepository<Basket, UUID> {
             group by id, p.product_id
             """)
     List<BasketProjection> findProductsInBasketByCustomerId(UUID id);
+
+    void deleteById(UUID id);
 }

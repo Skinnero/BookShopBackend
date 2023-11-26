@@ -15,4 +15,6 @@ public interface ProductCategoryRepository extends JpaRepository<ProductCategory
     List<ProductCategory> findAll();
     @Query("SELECT pc FROM ProductCategory pc left join fetch pc.products WHERE pc.id = :id")
     Optional<ProductCategory> findById(UUID id);
+
+    void deleteById(UUID id);
 }

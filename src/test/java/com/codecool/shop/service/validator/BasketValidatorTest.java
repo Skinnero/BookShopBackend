@@ -15,8 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class BasketValidatorTest {
@@ -36,10 +35,10 @@ public class BasketValidatorTest {
     void testValidateEntityById_ShouldReturnObject_WhenExist() {
         // when
         Mockito.when(repository.findById(basketId)).thenReturn(Optional.of(new Basket()));
-        Basket basket = validator.validateByEntityId(basketId);
 
         // then
-        assertThat(basket).isNotNull();
+        assertThatCode(() -> validator.validateByEntityId(basketId))
+                .doesNotThrowAnyException();
     }
 
     @Test

@@ -10,12 +10,12 @@ import java.util.UUID;
 
 @Component
 @AllArgsConstructor
-public class SupplierValidator implements Validator<Supplier> {
+public class SupplierValidator implements Validator {
     private final SupplierRepository supplierRepository;
 
     @Override
-    public Supplier validateByEntityId(UUID id) {
-        return supplierRepository.findById(id)
+    public void validateByEntityId(UUID id) {
+        supplierRepository.findById(id)
                 .orElseThrow(() -> new ObjectNotFoundException(id, Supplier.class));
     }
 }
