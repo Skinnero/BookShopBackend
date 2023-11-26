@@ -1,7 +1,7 @@
-# CodeCool Shop
+# BookShop
 It's a shopping web app tutorial.
 
-This repo it's only a server that throws api which are used for frontend version of this project.
+This repo only serves the server that throws the api that are used for frontend version of this project.
 
 It's just a basic concept of a backend server.
 
