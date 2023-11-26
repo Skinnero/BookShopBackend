@@ -15,8 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class CustomerValidatorTest {
@@ -36,10 +35,10 @@ public class CustomerValidatorTest {
     void testValidateEntityById_ShouldReturnObject_WhenExist() {
         // when
         Mockito.when(repository.findById(customerId)).thenReturn(Optional.of(new Customer()));
-        Customer customer = validator.validateByEntityId(customerId);
 
         // then
-        assertThat(customer).isNotNull();
+        assertThatCode(() -> validator.validateByEntityId(customerId))
+                .doesNotThrowAnyException();
     }
 
     @Test
@@ -56,10 +55,10 @@ public class CustomerValidatorTest {
     void testValidateByEmail_ShouldReturnObject_WhenExist() {
         // when
         Mockito.when(repository.findByEmail("Email")).thenReturn(Optional.of(new Customer()));
-        Customer customer = validator.validateByEmail("Email");
 
         // then
-        assertThat(customer).isNotNull();
+        assertThatCode(() -> validator.validateByEmail("Email"))
+                .doesNotThrowAnyException();
     }
 
     @Test

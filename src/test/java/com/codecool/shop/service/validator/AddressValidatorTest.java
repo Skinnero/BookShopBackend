@@ -14,8 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.Optional;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.*;
 
 @ExtendWith(MockitoExtension.class)
 public class AddressValidatorTest {
@@ -32,13 +31,13 @@ public class AddressValidatorTest {
     }
 
     @Test
-    void testValidateEntityById_ShouldReturnObject_WhenExist() {
+    void testValidateEntityById_ShouldNotThrowAndError_WhenExist() {
         // when
         Mockito.when(repository.findById(addressId)).thenReturn(Optional.of(new Address()));
-        Address address = validator.validateByEntityId(addressId);
 
         // then
-        assertThat(address).isNotNull();
+        assertThatCode(() -> validator.validateByEntityId(addressId))
+                .doesNotThrowAnyException();
     }
 
     @Test
