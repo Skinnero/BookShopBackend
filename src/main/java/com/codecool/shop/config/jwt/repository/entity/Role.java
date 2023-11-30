@@ -14,14 +14,13 @@ import java.util.UUID;
 @AllArgsConstructor
 @Setter
 @Getter
-@ToString
 public class Role {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
     @Enumerated(EnumType.STRING)
     private CustomerRole customerRole;
-    @ManyToMany(mappedBy = "roles")
+    @ManyToMany(mappedBy = "roles", fetch = FetchType.LAZY)
     private final Set<Customer> customers = new HashSet<>();
 
     @Override
