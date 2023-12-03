@@ -1,11 +1,10 @@
 package com.codecool.shop.dto.basket;
 
-import jakarta.validation.Valid;
-
 import java.util.List;
+import java.util.UUID;
 
 public record EditBasketDto(
-        @Valid
-        List<ProductsInBasketDto> products
+
+        List<UUID> products
 ) {
 }
