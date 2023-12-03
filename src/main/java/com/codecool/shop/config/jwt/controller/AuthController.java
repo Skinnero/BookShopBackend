@@ -34,7 +34,7 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final JwtUtils jwtUtils;
 
-    @PostMapping(value = "/sign-in", produces = "application/json")
+    @PostMapping("/login")
     private ResponseEntity<JwtTokenResponse> signInCustomer(@Valid @RequestBody LoginRequest loginRequest) {
 
         Authentication authentication = authenticationManager.authenticate(
@@ -60,7 +60,7 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/sign-up")
+    @PostMapping("/signup")
     public ResponseEntity<Void> signUpCustomer(@Valid @RequestBody NewCustomerDto newCustomerDto) {
         customerService.saveCustomer(newCustomerDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
@@ -71,7 +71,7 @@ public class AuthController {
             @Valid @RequestBody RefreshTokenRequest refreshTokenRequest, HttpServletRequest request) {
 
         String token = jwtUtils.parseToken(request);
-        if (!token.isEmpty() && jwtUtils.hasTokenExpired(token)) {
+        if (!token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.ACCEPTED)
                     .body(refreshTokenService.handleRefreshTokenRequest(refreshTokenRequest));
         }
@@ -82,7 +82,7 @@ public class AuthController {
     public ResponseEntity<Void> logoutCustomer(HttpServletRequest request) {
 
         String token = jwtUtils.parseToken(request);
-        if (token.isEmpty() || !jwtUtils.hasTokenExpired(token)) {
+        if (token.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         CustomerDto customerDto = customerService.getCustomerByEmail(jwtUtils.getEmailFromToken(token));
