@@ -4,6 +4,16 @@ VALUES (true, '2013-10-12', 'b2212e0f-8124-44ce-a8d6-31ac5cfb75cb', 'kapi@wp.pl'
        (false, '2013-10-12', 'ec63f4d5-6964-49a9-822c-36b7349efc3a', 'mati@wp.pl', 'mati', 'mati'),
        (false, '2013-10-12', 'cbc22041-a58b-431f-8d26-7355fab4cb65', 'tomi@wp.pl', 'tomi', 'tomi');
 
+-- ROLE
+INSERT INTO role(id, customer_role)
+VALUES ('df662349-8ac1-4e4e-8abf-1297be4bfad0', 'ROLE_USER'),
+       ('cd6bc1f2-00b2-4b9f-9b12-ab51d970168b', 'ROLE_ADMIN');
+
+-- ROLE <> CUSTOMER
+INSERT INTO customer_role(customer_id, role_id)
+VALUES ('b2212e0f-8124-44ce-a8d6-31ac5cfb75cb', 'df662349-8ac1-4e4e-8abf-1297be4bfad0'),
+       ('b2212e0f-8124-44ce-a8d6-31ac5cfb75cb', 'cd6bc1f2-00b2-4b9f-9b12-ab51d970168b');
+
 -- ADDRESS
 insert into address(zip_code, customer_id, id, additional_info, city, street, street_number)
 VALUES (123, 'ec63f4d5-6964-49a9-822c-36b7349efc3a', 'a5ad0a45-d3c9-4867-9b06-6e6d27d20e2d', '', 'City1', 'Street1',
