@@ -1,6 +1,6 @@
 package com.codecool.shop.controller;
 
-import com.codecool.shop.dto.basket.BasketWithProductsDto;
+import com.codecool.shop.dto.basket.BasketDto;
 import com.codecool.shop.dto.basket.EditBasketDto;
 import com.codecool.shop.dto.basket.NewBasketDto;
 import com.codecool.shop.repository.CustomerRepository;
@@ -37,7 +37,7 @@ public class BasketControllerTest {
 
     private UUID basketId;
     private UUID customerId;
-    private BasketWithProductsDto basketWithProductsDto;
+    private BasketDto basketDto;
     private EditBasketDto editBasketDto;
     private String contentResponse;
 
@@ -46,7 +46,7 @@ public class BasketControllerTest {
         basketId = UUID.fromString("e2cb5e73-3637-4614-9067-49fde8406969");
         customerId = UUID.fromString("1dfdd491-cbf9-4c21-aa96-a08ca97d4a2f");
 
-        basketWithProductsDto = new BasketWithProductsDto(
+        basketDto = new BasketDto(
                 basketId,
                 List.of()
         );
@@ -57,32 +57,63 @@ public class BasketControllerTest {
 
         contentResponse = """
                 {
-                    "id": "e2cb5e73-3637-4614-9067-49fde8406969",
+                    "basketId": "e2cb5e73-3637-4614-9067-49fde8406969",
                     "products": []
                 }
                 """;
     }
 
     @Test
-    void testGetBasketWithProductsById_ShouldReturnStatusOkAndBasketWithProductsDto_WhenExist() throws Exception {
+    void testGetBasketByCustomerId_ShouldReturnStatusOkAndBasketDto_WhenExist() throws Exception {
         // when
-        Mockito.when(service.getBasketWithProductsById(basketId)).thenReturn(basketWithProductsDto);
+        Mockito.when(service.getBasketByCustomerId(customerId)).thenReturn(basketDto);
 
         // then
-        mockMvc.perform(get("/api/v1/baskets/detailed/" + basketId))
+        mockMvc.perform(get("/api/v1/baskets")
+                        .param("customerId", String.valueOf(customerId)))
                 .andExpectAll(status().isOk(),
                         content().json(contentResponse)
                 );
     }
 
     @Test
-    void testGetBasketWithProductsById_ShouldReturnStatusBadRequestAndErrorMessage_WhenNoBasket() throws Exception {
+    void testGetBasketByCustomerId_ShouldReturnStatusNotFoundAndErrorMessage_WhenNoCustomer() throws Exception {
         // when
-        Mockito.when(service.getBasketWithProductsById(basketId))
+        Mockito.when(service.getBasketByCustomerId(customerId))
+                .thenThrow(new ObjectNotFoundException(customerId, Customer.class));
+
+        // then
+        mockMvc.perform(get("/api/v1/baskets")
+                        .param("customerId", String.valueOf(customerId)))
+                .andExpectAll(status().isNotFound(),
+                        jsonPath("$.errorMessage")
+                                .value("Object of a class " + Customer.class.getSimpleName() +
+                                        " and id " + customerId + " does not exist")
+                );
+    }
+
+    @Test
+    void testGetBasketWithProductsById_ShouldReturnStatusOkAndBasketWithProductsDto_WhenExist() throws Exception {
+        // when
+        Mockito.when(service.getAllBasketsWithProductsByCustomerId(customerId)).thenReturn(List.of());
+
+        // then
+        mockMvc.perform(get("/api/v1/baskets/detailed")
+                        .param("customerId", String.valueOf(customerId)))
+                .andExpectAll(status().isOk(),
+                        content().json("[]")
+                );
+    }
+
+    @Test
+    void testGetBasketWithProductsById_ShouldReturnStatusNotFoundAndErrorMessage_WhenNoBasket() throws Exception {
+        // when
+        Mockito.when(service.getAllBasketsWithProductsByCustomerId(customerId))
                 .thenThrow(new ObjectNotFoundException(basketId, Basket.class));
 
         // then
-        mockMvc.perform(get("/api/v1/baskets/detailed/" + basketId))
+        mockMvc.perform(get("/api/v1/baskets/detailed")
+                        .param("customerId", String.valueOf(customerId)))
                 .andExpectAll(status().isNotFound(),
                         jsonPath("$.errorMessage")
                                 .value("Object of a class " + Basket.class.getSimpleName() +
@@ -91,28 +122,14 @@ public class BasketControllerTest {
     }
 
     @Test
-    void testGetAllBasketsWithProducts_ShouldReturnStatusOkAndListOfBasketWithProductsDto_WhenCustomerExist() throws Exception {
-        // when
-        Mockito.when(service.getAllBasketsWithProductsByCustomerId(customerId))
-                .thenReturn(List.of());
-
-        // then
-        mockMvc.perform(get("/api/v1/baskets/detailed")
-                        .param("customerId", customerId.toString()))
-                .andExpectAll(status().isOk(),
-                        content().json("[]")
-                );
-    }
-
-    @Test
-    void testGetAllBasketsWithProducts_ShouldReturnStatusNotFoundAndErrorMessage_WhenNoCustomer() throws Exception {
+    void testGetBasketWithProductsById_ShouldReturnStatusNotFoundAndErrorMessage_WhenNoCustomer() throws Exception {
         // when
         Mockito.when(service.getAllBasketsWithProductsByCustomerId(customerId))
                 .thenThrow(new ObjectNotFoundException(customerId, Customer.class));
 
         // then
         mockMvc.perform(get("/api/v1/baskets/detailed")
-                        .param("customerId", customerId.toString()))
+                        .param("customerId", String.valueOf(customerId)))
                 .andExpectAll(status().isNotFound(),
                         jsonPath("$.errorMessage")
                                 .value("Object of a class " + Customer.class.getSimpleName() +
@@ -210,7 +227,7 @@ public class BasketControllerTest {
     void testDeleteBasket_ShouldReturnStatusNotFound_WhenNoBasket() throws Exception {
         // when
         Mockito.doThrow(new ObjectNotFoundException(basketId, Basket.class))
-                        .when(service).deleteBasket(basketId);
+                .when(service).deleteBasket(basketId);
 
         // then
         mockMvc.perform(delete("/api/v1/baskets/" + basketId))
