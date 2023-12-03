@@ -1,32 +1,28 @@
 package com.codecool.shop.service;
 
-import com.codecool.shop.dto.basket.BasketWithProductsDto;
+import com.codecool.shop.dto.basket.BasketDto;
 import com.codecool.shop.dto.basket.EditBasketDto;
 import com.codecool.shop.dto.basket.NewBasketDto;
-import com.codecool.shop.dto.basket.ProductsInBasketDto;
 import com.codecool.shop.repository.BasketRepository;
+import com.codecool.shop.repository.ProductRepository;
 import com.codecool.shop.repository.entity.Basket;
-import com.codecool.shop.repository.entity.projection.BasketProjection;
+import com.codecool.shop.repository.entity.Product;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.BasketMapper;
 import com.codecool.shop.service.validator.BasketValidator;
 import com.codecool.shop.service.validator.CustomerValidator;
-import com.codecool.shop.service.validator.ProductValidator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.data.projection.ProjectionFactory;
-import org.springframework.data.projection.SpelAwareProxyProjectionFactory;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 
 @ExtendWith(MockitoExtension.class)
 public class BasketServiceTest {
@@ -41,17 +37,16 @@ public class BasketServiceTest {
     @Mock
     CustomerValidator customerValidator;
     @Mock
-    ProductValidator productValidator;
+    ProductRepository productRepository;
 
-    private final ProjectionFactory factory = new SpelAwareProxyProjectionFactory();
-    private BasketProjection basketProjection = factory.createProjection(BasketProjection.class);
-    private BasketWithProductsDto basketWithProductsDto;
     private UUID basketId;
     private UUID customerId;
     private UUID productId;
     private NewBasketDto newBasketDto;
     private EditBasketDto editBasketDto;
+    private BasketDto basketDto;
     private Basket basket;
+    private Product product;
 
     @BeforeEach
     void setUp() {
@@ -64,40 +59,65 @@ public class BasketServiceTest {
         );
 
         editBasketDto = new EditBasketDto(
-                List.of(new ProductsInBasketDto(productId, 2))
+                List.of(productId)
         );
 
-        basket = new Basket();
-
-        basketWithProductsDto = new BasketWithProductsDto(
+        basketDto = new BasketDto(
                 basketId,
                 List.of()
         );
+
+        product = new Product();
+
+        basket = new Basket();
     }
 
     @Test
-    void testGetBasketWithProductsById_ShouldReturnBasketWithProductsDto_WhenBasketExist() {
+    void testGetBasketByCustomerId_ShouldReturnBasketDto_WhenExist() {
         // when
-        Mockito.when(repository.findProductsInBasketById(basketId)).thenReturn(List.of(basketProjection));
-        Mockito.when(mapper.toBasketWithProductsDto(basketId, List.of(basketProjection)))
-                .thenReturn(basketWithProductsDto);
-        BasketWithProductsDto expectedBasketWithProductsDto = service.getBasketWithProductsById(basketId);
+        Mockito.when(repository.findByCustomerId(customerId)).thenReturn(Optional.of(basket));
+        Mockito.when(mapper.toBasketDto(basket)).thenReturn(basketDto);
 
-        // then
-        assertThat(expectedBasketWithProductsDto).isEqualTo(basketWithProductsDto);
+        BasketDto basketDtoFromTest = service.getBasketByCustomerId(customerId);
+
+        //then
+        assertThat(basketDtoFromTest).isEqualTo(basketDto);
     }
 
     @Test
-    void testGetBasketWithProductsById_ShouldThrownObjectNotFoundException_WhenNoBasket() {
+    void testGetBasketByCustomerId_ShouldThrownObjectNotFoundException_WhenNoBasket() {
         // when
-        Mockito.doThrow(ObjectNotFoundException.class).when(validator).validateByEntityId(basketId);
+        Mockito.doThrow(ObjectNotFoundException.class).when(customerValidator).validateByEntityId(customerId);
 
         // then
-        assertThatThrownBy(() -> service.getBasketWithProductsById(basketId))
+        assertThatThrownBy(() -> service.getBasketByCustomerId(customerId))
                 .isInstanceOf(ObjectNotFoundException.class);
     }
+
     @Test
-    void testGetBasketWithProductsByCustomerId_ShouldThrownObjectNotFoundException_WhenNoCustomer() {
+    void testGetBasketById_ShouldReturnBasketDto_WhenExist() {
+        // when
+        Mockito.when(repository.findById(basketId)).thenReturn(Optional.of(basket));
+        Mockito.when(mapper.toBasketDto(basket)).thenReturn(basketDto);
+
+        BasketDto basketDtoFromTest = service.getBasketById(basketId);
+
+        //then
+        assertThat(basketDtoFromTest).isEqualTo(basketDto);
+    }
+
+    @Test
+    void testGetBasketById_ShouldThrownObjectNotFoundException_WhenNoBasket() {
+        // when
+        Mockito.doThrow(ObjectNotFoundException.class).when(repository).findById(basketId);
+
+        // then
+        assertThatThrownBy(() -> service.getBasketById(basketId))
+                .isInstanceOf(ObjectNotFoundException.class);
+    }
+
+    @Test
+    void testGetAllBasketsWithProductsByCustomerId_ShouldReturnBasketDto_WhenExist() {
         // when
         Mockito.doThrow(ObjectNotFoundException.class).when(customerValidator).validateByEntityId(customerId);
 
@@ -108,23 +128,13 @@ public class BasketServiceTest {
 
     @Test
     void testGetAllBasketsWithProductsByCustomerId_ShouldReturnListOfBasketWithProductsDto_WhenBasketExist() {
-        // given
-        BasketProjection basketProjectionTwo = factory.createProjection(BasketProjection.class);
-        basketProjectionTwo.setBasketId(basketId);
-        UUID differentBasketId = UUID.randomUUID();
-        basketProjection.setBasketId(differentBasketId);
-
         // when
-        Mockito.when(repository.findProductsInBasketByCustomerId(customerId))
-                .thenReturn(List.of(basketProjection, basketProjectionTwo));
-        Mockito.when(mapper.toBasketWithProductsDto(basketId, List.of(basketProjectionTwo)))
-                .thenReturn(basketWithProductsDto);
-        Mockito.when(mapper.toBasketWithProductsDto(differentBasketId, List.of(basketProjection)))
-                .thenReturn(basketWithProductsDto);
-        List<BasketWithProductsDto> list = service.getAllBasketsWithProductsByCustomerId(customerId);
+        Mockito.when(repository.findAllByCustomerId(customerId)).thenReturn(List.of());
+
+        List<BasketDto> basketDtoList = service.getAllBasketsWithProductsByCustomerId(customerId);
 
         // then
-        assertThat(list.size()).isEqualTo(2);
+        assertThat(basketDtoList.size()).isEqualTo(0);
     }
 
     @Captor
@@ -151,23 +161,12 @@ public class BasketServiceTest {
     }
 
     @Captor
-    ArgumentCaptor<List<UUID>> uuidListCaptor;
-
-    @Test
-    void testUpdateBasket_ShouldUpdateBasketWithNewList_WhenBasketExist() {
-        // when
-        service.updateBasket(basketId, editBasketDto);
-
-        // then
-        Mockito.verify(mapper, Mockito.times(1))
-                .dtoToBasket(eq(basketId), uuidListCaptor.capture());
-        assertThat(uuidListCaptor.getValue().size()).isEqualTo(2);
-    }
+    ArgumentCaptor<Basket> basketCaptor;
 
     @Test
     void testUpdateBasket_ShouldThrowObjectNotFoundException_WhenNoBasket() {
         // when
-        Mockito.doThrow(ObjectNotFoundException.class).when(validator).validateByEntityId(basketId);
+        Mockito.when(repository.findById(basketId)).thenReturn(Optional.empty());
 
         // then
         assertThatThrownBy(() -> service.updateBasket(basketId, editBasketDto))
@@ -176,12 +175,21 @@ public class BasketServiceTest {
 
     @Test
     void testUpdateBasket_ShouldThrowObjectNotFoundException_WhenNoProduct() {
-        // when
-        Mockito.doThrow(ObjectNotFoundException.class).when(productValidator).validateByEntityId(any(UUID.class));
-
         // then
         assertThatThrownBy(() -> service.updateBasket(basketId, editBasketDto))
                 .isInstanceOf(ObjectNotFoundException.class);
+    }
+
+    @Test
+    void testUpdateBasket_ShouldUpdateListOfANewValue_WhenAllValid() {
+        // when
+        Mockito.when(repository.findById(basketId)).thenReturn(Optional.of(basket));
+        Mockito.when(productRepository.findById(productId)).thenReturn(Optional.of(product));
+
+        service.updateBasket(basketId, editBasketDto);
+        // then
+        Mockito.verify(repository, Mockito.times(1)).save(basketCaptor.capture());
+        assertThat(basketCaptor.getValue().getProducts().size()).isEqualTo(1);
     }
 
     @Test

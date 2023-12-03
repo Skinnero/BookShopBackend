@@ -1,7 +1,6 @@
 package com.codecool.shop.repository;
 
 import com.codecool.shop.repository.entity.Basket;
-import com.codecool.shop.repository.entity.projection.BasketProjection;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,38 +27,47 @@ public class BasketRepositoryTest {
     }
 
     @Test
-    void testFindById_ShouldReturnPresentOptional_WhenAddressExist() {
+    void testFindById_ShouldReturnPresentOptional_WhenBasketExist() {
         // when
-        Optional<Basket> address = repository.findById(basketId);
+        Optional<Basket> basket = repository.findById(basketId);
 
         // then
-        assertThat(address.isPresent()).isTrue();
+        assertThat(basket.isPresent()).isTrue();
     }
 
     @Test
-    void testFindById_ShouldReturnEmptyOptional_WhenNoAddress() {
+    void testFindById_ShouldReturnEmptyOptional_WhenNoBasket() {
         // when
-        Optional<Basket> address = repository.findById(UUID.randomUUID());
+        Optional<Basket> basket = repository.findById(UUID.randomUUID());
+
+        // then
+        assertThat(basket.isEmpty()).isTrue();
+    }
+
+    @Test
+    void testFindByCustomerId_ShouldReturnPresentOptional_WhenBasketExist() {
+        // when
+        Optional<Basket> basket = repository.findByCustomerId(customerId);
+
+        // then
+        assertThat(basket.isPresent()).isTrue();
+    }
+
+    @Test
+    void testFindByCustomerId_ShouldReturnEmptyOptional_WhenNoBasket() {
+        // when
+        Optional<Basket> address = repository.findByCustomerId(UUID.randomUUID());
 
         // then
         assertThat(address.isEmpty()).isTrue();
     }
-
     @Test
-    void testFindProductsInBasketById_ShouldReturnListOfCasketProjection_WhenCalled() {
+    void testFindAllByCustomerId_ShouldReturnEmptyOptional_WhenNoBasket() {
         // when
-        List<BasketProjection> list = repository.findProductsInBasketById(basketId);
+        List<Basket> basketList = repository.findAllByCustomerId(customerId);
 
         // then
-        assertThat(list.size()).isEqualTo(1);
-
+        assertThat(basketList.size()).isEqualTo(2);
     }
-    @Test
-    void testFindProductsInBasketByCustomerId_ShouldReturnListOfCasketProjection_WhenCalled() {
-        // when
-        List<BasketProjection> list = repository.findProductsInBasketByCustomerId(customerId);
 
-        // then
-        assertThat(list.size()).isEqualTo(1);
-    }
 }

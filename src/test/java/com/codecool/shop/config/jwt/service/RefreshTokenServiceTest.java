@@ -125,7 +125,7 @@ public class RefreshTokenServiceTest {
         refreshToken.setExpiryDate(Instant.now());
 
         // when
-        Mockito.when(repository.findById(refreshTokenId)).thenReturn(Optional.of(refreshToken));
+        Mockito.when(repository.findById(refreshTokenId)).thenThrow(new RefreshTokenExpiredException(refreshTokenId));
 
         // then
         assertThatThrownBy(() -> service.handleRefreshTokenRequest(new RefreshTokenRequest(refreshTokenId)))

@@ -1,22 +1,21 @@
 package com.codecool.shop.service;
 
-import com.codecool.shop.dto.basket.BasketWithProductsDto;
+import com.codecool.shop.dto.basket.BasketDto;
 import com.codecool.shop.dto.basket.EditBasketDto;
 import com.codecool.shop.dto.basket.NewBasketDto;
 import com.codecool.shop.repository.BasketRepository;
-import com.codecool.shop.repository.entity.projection.BasketProjection;
+import com.codecool.shop.repository.ProductRepository;
+import com.codecool.shop.repository.entity.Basket;
+import com.codecool.shop.repository.entity.Product;
+import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.BasketMapper;
 import com.codecool.shop.service.validator.BasketValidator;
 import com.codecool.shop.service.validator.CustomerValidator;
-import com.codecool.shop.service.validator.ProductValidator;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @AllArgsConstructor
@@ -25,23 +24,23 @@ public class BasketService {
     private final BasketMapper basketMapper;
     private final BasketValidator basketValidator;
     private final CustomerValidator customerValidator;
-    private final ProductValidator productValidator;
+    private final ProductRepository productRepository;
 
-    public BasketWithProductsDto getBasketWithProductsById(UUID id) {
-        basketValidator.validateByEntityId(id);
-        return basketMapper.toBasketWithProductsDto(id, basketRepository.findProductsInBasketById(id));
+    public BasketDto getBasketByCustomerId(UUID customerId) {
+        customerValidator.validateByEntityId(customerId);
+        return basketMapper.toBasketDto(basketRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new ObjectNotFoundException(Basket.class)));
     }
 
-    public List<BasketWithProductsDto> getAllBasketsWithProductsByCustomerId(UUID customerId) {
+    public BasketDto getBasketById(UUID id) {
+        return basketMapper.toBasketDto(basketRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Basket.class)));
+    }
+
+    public List<BasketDto> getAllBasketsWithProductsByCustomerId(UUID customerId) {
         customerValidator.validateByEntityId(customerId);
-        List<BasketProjection> basketList = basketRepository.findProductsInBasketByCustomerId(customerId);
-
-        Map<UUID, List<BasketProjection>> groupedBasketMap = basketList.stream()
-                .collect(Collectors.groupingBy(BasketProjection::getBasketId));
-
-        return groupedBasketMap.entrySet()
-                .stream()
-                .map(entry -> basketMapper.toBasketWithProductsDto(entry.getKey(), entry.getValue()))
+        return basketRepository.findAllByCustomerId(customerId).stream()
+                .map(basketMapper::toBasketDto)
                 .toList();
     }
 
@@ -51,16 +50,17 @@ public class BasketService {
     }
 
     public void updateBasket(UUID id, EditBasketDto editBasketDto) {
-        basketValidator.validateByEntityId(id);
+        Basket basket = basketRepository.findById(id)
+                .orElseThrow(() -> new ObjectNotFoundException(id, Basket.class));
 
-        editBasketDto.products().forEach(product -> productValidator.validateByEntityId(product.productId()));
+        basket.removeProducts();
 
-        List<UUID> productList = editBasketDto.products()
-                .stream()
-                .flatMap(product -> Collections.nCopies(product.quantity(), product.productId())
-                        .stream()).toList();
+        editBasketDto.products().forEach(product -> {
+            basket.appendProduct(productRepository.findById(product)
+                    .orElseThrow(() -> new ObjectNotFoundException(product, Product.class)));
+        });
 
-        basketRepository.save(basketMapper.dtoToBasket(id, productList));
+        basketRepository.save(basket);
     }
 
     public void deleteBasket(UUID id) {

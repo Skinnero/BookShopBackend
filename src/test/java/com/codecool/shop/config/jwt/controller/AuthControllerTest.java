@@ -82,7 +82,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    void testSignInCustomer_ShouldReturnStatusCreatedAndJwtTokenResponse_WhenCustomerExist() throws Exception {
+    void testLoginCustomer_ShouldReturnStatusCreatedAndJwtTokenResponse_WhenCustomerExist() throws Exception {
         // given
         RefreshToken refreshToken = new RefreshToken();
         refreshToken.setId(refreshTokenId);
@@ -112,7 +112,7 @@ public class AuthControllerTest {
         Mockito.when(refreshTokenService.createRefreshToken(customerId)).thenReturn(refreshToken);
 
         // then
-        mockMvc.perform(post("/api/v1/auths/sign-in")
+        mockMvc.perform(post("/api/v1/auths/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentRequest))
                 .andExpectAll(status().isCreated(),
@@ -122,7 +122,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    void testSignInCustomer_ShouldReturnStatusBadRequestAndErrorMessages_WhenInvalidValuesInBody() throws Exception {
+    void testLoginCustomer_ShouldReturnStatusBadRequestAndErrorMessages_WhenInvalidValuesInBody() throws Exception {
         // given
         String contentRequest = """
                 {
@@ -132,7 +132,7 @@ public class AuthControllerTest {
                 """;
 
         // then
-        mockMvc.perform(post("/api/v1/auths/sign-in")
+        mockMvc.perform(post("/api/v1/auths/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentRequest))
                 .andExpectAll(status().isBadRequest(),
@@ -143,7 +143,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    void testSignInCustomer_ShouldReturnStatusNotFoundAndErrorMessages_WhenNoCustomer() throws Exception {
+    void testLoginCustomer_ShouldReturnStatusNotFoundAndErrorMessages_WhenNoCustomer() throws Exception {
         // given
         String contentRequest = """
                 {
@@ -161,7 +161,7 @@ public class AuthControllerTest {
                 .thenThrow(new EmailNotFoundException(email));
 
         // then
-        mockMvc.perform(post("/api/v1/auths/sign-in")
+        mockMvc.perform(post("/api/v1/auths/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentRequest))
                 .andExpectAll(status().isNotFound(),
@@ -184,7 +184,7 @@ public class AuthControllerTest {
         Mockito.when(customerRepository.findByEmail(email)).thenReturn(Optional.empty());
 
         // then
-        mockMvc.perform(post("/api/v1/auths/sign-up")
+        mockMvc.perform(post("/api/v1/auths/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentRequest))
                 .andExpect(status().isCreated());
@@ -207,7 +207,7 @@ public class AuthControllerTest {
         Mockito.when(customerRepository.findByEmail(email)).thenReturn(Optional.of(new Customer()));
 
         // then
-        mockMvc.perform(post("/api/v1/auths/sign-up")
+        mockMvc.perform(post("/api/v1/auths/signup")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(contentRequest))
                 .andExpectAll(status().isBadRequest(),
@@ -233,6 +233,7 @@ public class AuthControllerTest {
             throws Exception {
         // given
         RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse(
+                "Bearer",
                 refreshTokenId,
                 jwtToken
         );
