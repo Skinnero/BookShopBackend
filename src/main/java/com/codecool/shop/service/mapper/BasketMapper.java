@@ -1,5 +1,6 @@
 package com.codecool.shop.service.mapper;
 
+import com.codecool.shop.dto.basket.BasketDto;
 import com.codecool.shop.dto.basket.BasketWithProductsDto;
 import com.codecool.shop.dto.basket.NewBasketDto;
 import com.codecool.shop.repository.entity.Basket;
@@ -23,12 +24,7 @@ public interface BasketMapper {
     @Mapping(source = "customerId", target = "customer.id")
     Basket dtoToBasket(NewBasketDto newBasketDto);
 
-
-    @Mapping(target = "isComplete", ignore = true)
-    @Mapping(target = "customer", ignore = true)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "products", source = "productList")
-    Basket dtoToBasket(UUID id, List<UUID> productList);
-
-
+    @Mapping(target = "basketId", source = "basket.id")
+    @Mapping(target = "products", source = "basket.products")
+    BasketDto toBasketDto(Basket basket);
 }
