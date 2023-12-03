@@ -8,17 +8,17 @@ spring:
     hibernate:
       ddl-auto: update
     open-in-view: false
-    show-sql: true
+    show-sql: false
 
 shop:
   app:
     frontendURL: http://localhost:3000
     jwtSecret: ==================CodeCoolShop==================
-    jwtTokenExpirationMs: 10000
+    jwtTokenExpirationMs: 360 000 0
     jwtRefreshTokenExpirationMs: 2 629 800 000
 
 #   2 629 800 000 - month
 #   604 800 017 - week
 #   864 000 00 - day
 #   360 000 0 - hour
-#   60000 - minute
+#   600 00 - minute
