@@ -57,8 +57,11 @@ public class RefreshTokenService {
     private RefreshTokenResponse createRefreshTokenResponse(Customer customer) {
         RefreshToken newRefreshToken = createRefreshToken(customer.getId());
         logger.info("Refresh Token has been created");
-        return new RefreshTokenResponse(newRefreshToken.getId(),
-                jwtUtils.generateTokenFromEmail(customer.getEmail()));
+        return new RefreshTokenResponse(
+                "Bearer",
+                newRefreshToken.getId(),
+                jwtUtils.generateTokenFromEmail(customer.getEmail())
+        );
     }
 
     private RefreshToken verifyExpiration(RefreshToken refreshToken) {
