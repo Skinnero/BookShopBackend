@@ -26,4 +26,11 @@ public class Basket {
             inverseJoinColumns = @JoinColumn(name = "product_id"))
     private List<Product> products;
 
+    public void appendProduct(Product product) {
+        products.add(product);
+    }
+
+    public void removeProducts() {
+        products.clear();
+    }
 }
