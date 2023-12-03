@@ -1,7 +1,7 @@
 package com.codecool.shop.controller;
 
 
-import com.codecool.shop.dto.basket.BasketWithProductsDto;
+import com.codecool.shop.dto.basket.BasketDto;
 import com.codecool.shop.dto.basket.EditBasketDto;
 import com.codecool.shop.dto.basket.NewBasketDto;
 import com.codecool.shop.service.BasketService;
@@ -21,15 +21,20 @@ import java.util.UUID;
 public class BasketController {
     public final BasketService basketService;
 
-    @GetMapping("/detailed/{id}")
+    @GetMapping(params = "customerId")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<BasketWithProductsDto> getBasketWithProducts(@PathVariable UUID id) {
-        return ResponseEntity.status(HttpStatus.OK).body(basketService.getBasketWithProductsById(id));
+    public ResponseEntity<BasketDto> getBasketByCustomerId(@RequestParam("customerId") UUID customerId) {
+        return ResponseEntity.status(HttpStatus.OK).body(basketService.getBasketByCustomerId(customerId));
+    }
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('ROLE_USER')")
+    public ResponseEntity<BasketDto> getBasketById(@PathVariable UUID id) {
+        return ResponseEntity.status(HttpStatus.OK).body(basketService.getBasketById(id));
     }
 
     @GetMapping(value = "/detailed", params = "customerId")
     @PreAuthorize("hasRole('ROLE_USER')")
-    public ResponseEntity<List<BasketWithProductsDto>> getAllBasketsWithProducts(@RequestParam("customerId") UUID customerId) {
+    public ResponseEntity<List<BasketDto>> getAllBasketsWithProducts(@RequestParam("customerId") UUID customerId) {
         return ResponseEntity.status(HttpStatus.OK).body(basketService.getAllBasketsWithProductsByCustomerId(customerId));
     }
 
@@ -43,7 +48,7 @@ public class BasketController {
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_USER')")
     public ResponseEntity<Void> assignProductsToBasket(@PathVariable UUID id,
-                                                            @Valid @RequestBody EditBasketDto editBasketDto) {
+                                                       @Valid @RequestBody EditBasketDto editBasketDto) {
         basketService.updateBasket(id, editBasketDto);
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
