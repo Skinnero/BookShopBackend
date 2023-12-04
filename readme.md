@@ -24,7 +24,7 @@ This repository is for the backend only and is compatible with its fronted, whic
 
 # Set Up
 ```shell
-mvn clean install
+./mvnw clean install
 ```
 ```shell
 docker-compose up --build
