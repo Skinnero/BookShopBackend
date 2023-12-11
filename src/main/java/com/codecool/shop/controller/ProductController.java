@@ -38,6 +38,13 @@ public class ProductController {
                 .body(productService.getFilteredProducts(supplierId, productCategoryId));
     }
 
+    @GetMapping(params = {"name"})
+    public ResponseEntity<List<ProductDto>> getProductsFromSearchBar(
+            @RequestParam(value = "name") String name) {
+        return ResponseEntity.status(HttpStatus.OK)
+                .body(productService.getProductsFromSearchBar(name));
+    }
+
     @PostMapping
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<Void> createNewProduct(@Valid @RequestBody NewProductDto newProductDto) {

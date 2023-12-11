@@ -32,5 +32,16 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
     List<Product> findAllBySupplierIdAndProductCategoryId(@Param("supplierId") UUID supplierId,
                                                           @Param("productCategoryId") UUID productCategoryId);
 
+    @Query(nativeQuery = true,
+            value = """
+                    SELECT *
+                    FROM product p
+                             LEFT JOIN supplier_product s ON p.id = s.product_id
+                             LEFT JOIN product_category_product pc ON p.id = pc.product_id
+                    WHERE name LIKE :name
+                        """)
+    List<Product> findAllByName(String name);
+
     void deleteById(UUID id);
+
 }

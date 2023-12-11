@@ -54,4 +54,12 @@ public class ProductService {
                 .map(productMapper::toDto)
                 .toList();
     }
+
+    public List<ProductDto> getProductsFromSearchBar(String name) {
+        String convertedName = '%' + name + '%';
+        return productRepository.findAllByName(convertedName)
+                .stream()
+                .map(productMapper::toDto)
+                .toList();
+    }
 }
