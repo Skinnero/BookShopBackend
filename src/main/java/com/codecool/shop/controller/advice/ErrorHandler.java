@@ -2,6 +2,7 @@ package com.codecool.shop.controller.advice;
 
 import com.codecool.shop.config.jwt.service.exception.RefreshTokenExpiredException;
 import com.codecool.shop.service.exception.EmailNotFoundException;
+import com.codecool.shop.service.exception.ObjectAlreadyExist;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import jakarta.validation.ConstraintViolationException;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -23,7 +24,7 @@ public class ErrorHandler {
         return new ErrorResponse(ex.getMessage());
     }
 
-    @ExceptionHandler(value = {RefreshTokenExpiredException.class})
+    @ExceptionHandler(value = {RefreshTokenExpiredException.class, ObjectAlreadyExist.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleRefreshTokenExceptions(RuntimeException ex) {
         return new ErrorResponse(ex.getMessage());
