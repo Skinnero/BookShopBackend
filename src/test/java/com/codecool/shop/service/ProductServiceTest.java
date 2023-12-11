@@ -21,6 +21,7 @@ import java.util.UUID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 
 @ExtendWith(MockitoExtension.class)
 public class ProductServiceTest {
@@ -146,5 +147,24 @@ public class ProductServiceTest {
         // then
         assertThat(list.size()).isEqualTo(0);
 
+    }
+
+    @Captor
+    ArgumentCaptor<String> nameCaptor;
+
+    @Test
+    void testGetProductsFromSearchBar_ShouldReturnListOfProducts_WhenCalled() {
+        // given
+        String testName = "name";
+        String testNameExpected = "%name%";
+
+        // when
+        Mockito.when(repository.findAllByName(anyString())).thenReturn(List.of());
+        List<ProductDto> list = service.getProductsFromSearchBar(testName);
+
+        // then
+        Mockito.verify(repository, Mockito.times(1)).findAllByName(nameCaptor.capture());
+        assertThat(nameCaptor.getValue()).isEqualTo(testNameExpected);
+        assertThat(list.size()).isEqualTo(0);
     }
 }

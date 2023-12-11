@@ -88,4 +88,15 @@ public class ProductRepositoryTest {
         // then
         assertThat(list.size()).isEqualTo(2);
     }
+    @Test
+    void testFindAllByName_ShouldReturnListOfProduct_WhenNoValueIsProvided() {
+        // given
+        String name = "%Name%";
+        // when
+        List<Product> list = repository.findAllByName(name);
+
+        // then
+        assertThat(list.size()).isEqualTo(2);
+    }
+
 }

@@ -20,8 +20,7 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -198,7 +197,7 @@ public class ProductControllerTest {
                 """;
         // when
         Mockito.doThrow(new ObjectNotFoundException(productId, Product.class))
-                        .when(service).updateProduct(eq(productId), any(NewProductDto.class));
+                .when(service).updateProduct(eq(productId), any(NewProductDto.class));
 
         // then
         mockMvc.perform(put("/api/v1/products/" + productId)
@@ -242,6 +241,19 @@ public class ProductControllerTest {
         mockMvc.perform(get("/api/v1/products")
                         .param("supplierId", UUID.randomUUID().toString())
                         .param("productCategoryId", UUID.randomUUID().toString()))
+                .andExpectAll(status().isOk(),
+                        content().json("[]")
+                );
+    }
+
+    @Test
+    void testGetProductsFromSearchBar_ShouldReturnStatusOkAndListOfProductDto_WhenCalled() throws Exception {
+        // when
+        Mockito.when(service.getProductsFromSearchBar(anyString())).thenReturn(List.of());
+
+        // then
+        mockMvc.perform(get("/api/v1/products")
+                        .param("name", "name"))
                 .andExpectAll(status().isOk(),
                         content().json("[]")
                 );
