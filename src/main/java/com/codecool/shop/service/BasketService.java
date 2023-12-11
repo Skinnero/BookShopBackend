@@ -7,7 +7,7 @@ import com.codecool.shop.repository.BasketRepository;
 import com.codecool.shop.repository.ProductRepository;
 import com.codecool.shop.repository.entity.Basket;
 import com.codecool.shop.repository.entity.Product;
-import com.codecool.shop.service.exception.ObjectAlreadyExist;
+import com.codecool.shop.service.exception.ObjectAlreadyExistException;
 import com.codecool.shop.service.exception.ObjectNotFoundException;
 import com.codecool.shop.service.mapper.BasketMapper;
 import com.codecool.shop.service.validator.BasketValidator;
@@ -48,7 +48,7 @@ public class BasketService {
     public void saveNewBasket(NewBasketDto newBasketDto) {
         basketRepository.findByCustomerId(newBasketDto.customerId())
                 .ifPresent(c -> {
-                    throw new ObjectAlreadyExist(Basket.class);
+                    throw new ObjectAlreadyExistException(Basket.class);
                 });
         customerValidator.validateByEntityId(newBasketDto.customerId());
         basketRepository.save(basketMapper.dtoToBasket(newBasketDto));
