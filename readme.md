@@ -18,6 +18,7 @@ This repository is for the backend only and is compatible with its fronted, whic
 * H2DB
 * FlywayDB
 
+
 # Requirements
 * JDK 17 or newer
 * Docker and Docker Compose
